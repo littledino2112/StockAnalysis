@@ -57,6 +57,7 @@ handles.output = hObject;
 
 % Application variables
 handles.DatabaseConn = '';
+handles.SelectedStock = [];
 % Update handles structure
 guidata(hObject, handles);
 
@@ -133,7 +134,9 @@ function StockSelectionMenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns StockSelectionMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from StockSelectionMenu
-
+   [valid, selected_stock] = query_stock(handles);
+    handles.SelectedStock = selected_stock;
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function StockSelectionMenu_CreateFcn(hObject, eventdata, handles)
@@ -156,7 +159,11 @@ function DurationEdit_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of DurationEdit as text
 %        str2double(get(hObject,'String')) returns contents of DurationEdit as a double
+    [valid, selected_stock] = query_stock(handles);
+    handles.SelectedStock = selected_stock;
+    guidata(hObject, handles);
 
+    
 % --- Executes during object creation, after setting all properties.
 function DurationEdit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to DurationEdit (see GCBO)
