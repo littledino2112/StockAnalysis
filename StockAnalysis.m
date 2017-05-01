@@ -151,7 +151,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function DurationEdit_Callback(hObject, eventdata, handles)
 % hObject    handle to DurationEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -220,4 +219,6 @@ function CloseAllButton_Callback(hObject, eventdata, handles)
 % hObject    handle to CloseAllButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+set(handles.MainFigure, 'HandleVisibility', 'off');
 close all;
+set(handles.MainFigure, 'HandleVisibility', 'on');
