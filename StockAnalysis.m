@@ -209,10 +209,9 @@ function CandleChartButton_Callback(hObject, eventdata, handles)
 % hObject    handle to CandleChartButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    [valid, selected_stock] = query_stock(handles);
-    if (valid)
+    if ~isempty(handles.SelectedStock)
         figure('Name','Candle Chart');
-        candle(selected_stock);
+        candle(handles.SelectedStock);
     end
 
 
