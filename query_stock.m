@@ -13,11 +13,13 @@ function [ valid, selected_stock ] = query_stock( handles )
     if isempty(symbol_data)
         valid = false;
         % Pop up error message here
-        msgbox('No data');
+        set(handles.StockLoadStatus,'String','No data available');
+        selected_stock = [];
     else
         valid = true;
         selected_stock = fints(symbol_data.DATE, [symbol_data.OPEN symbol_data.HIGH symbol_data.LOW symbol_data.CLOSE symbol_data.VOLUME],...
                         {'OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME'});
+        set(handles.StockLoadStatus,'String','Data loaded');
     end
 
 end
