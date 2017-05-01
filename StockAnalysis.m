@@ -182,13 +182,19 @@ function OBVChartButton_Callback(hObject, eventdata, handles)
     % hObject    handle to OBVChartButton (see GCBO)
     % eventdata  reserved - to be defined in a future version of MATLAB
     % handles    structure with handles and user data (see GUIDATA)
-    [valid, selected_stock] = query_stock(handles);
-    if (valid)
-        dis_onbalvol = onbalvol(selected_stock);
-        figure('Name','On balance volume');
-        plot(dis_onbalvol);
+    if ~isempty(handles.SelectedStock)
+        figure('Name','On Balance Volume');
+        subplot(3,1,1);
+        candle(handles.SelectedStock);
+        subplot(3,1,2);   
+        plot(onbalvol(handles.SelectedStock));
+        % Plot volume in bar graph
+        ax = subplot(3,1,3);
+        data_extract = fts2mat(handles.SelectedStock.VOLUME,1);
+        bar(data_extract(:,1),data_extract(:,2));
+        ax.XTick = data_extract(:,1);
+        datetick(ax,'x','d','keepticks');
     end
-        
 
 
 % --- Executes on button press in OverviewButton.
