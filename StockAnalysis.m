@@ -222,3 +222,12 @@ function CloseAllButton_Callback(hObject, eventdata, handles)
 set(handles.MainFigure, 'HandleVisibility', 'off');
 close all;
 set(handles.MainFigure, 'HandleVisibility', 'on');
+
+
+% --- Executes on button press in UpdateDBButton.
+function UpdateDBButton_Callback(hObject, eventdata, handles)
+% hObject    handle to UpdateDBButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+[status, msg] = update_stock_db(handles.DatabaseConn);
+set(handles.LoadDataStatus,'String',msg);
