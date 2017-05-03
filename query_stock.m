@@ -8,7 +8,7 @@ function [ valid, selected_stock ] = query_stock( handles )
     duration = str2double(duration);
     db_conn = handles.DatabaseConn;
     start_date = num2str(floor(now) - duration);
-    sql_query = ['SELECT * FROM STOCK WHERE SYMBOL LIKE ''' selectedStock ''' AND DATE > ' start_date];
+    sql_query = ['SELECT * FROM STOCK WHERE SYMBOL = ''' selectedStock ''' AND DATE > ' start_date];
     symbol_data = fetch(db_conn, sql_query);
     if isempty(symbol_data)
         valid = false;
