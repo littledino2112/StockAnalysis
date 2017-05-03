@@ -45,7 +45,7 @@ function [ status, msg ] = update_stock_db( db_conn )
            colnames = {'SYMBOL','DATE','OPEN','HIGH','LOW','CLOSE', ...
                        'VOLUME'};
            raw_data = table2cell(raw_data);
-           datainsert(db_conn,'TEMP',colnames,raw_data);
+           datainsert(db_conn,'STOCK',colnames,raw_data);
            date_added = date_added + 1;
            
            % Remove downloaded files
