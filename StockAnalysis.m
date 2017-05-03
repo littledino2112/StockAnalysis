@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 01-May-2017 21:18:08
+% Last Modified by GUIDE v2.5 02-May-2017 23:29:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -191,8 +191,9 @@ function OBVChartButton_Callback(hObject, eventdata, handles)
         ax = subplot(3,1,3);
         data_extract = fts2mat(handles.SelectedStock.VOLUME,1);
         bar(data_extract(:,1),data_extract(:,2));
-        ax.XTick = data_extract(:,1);
-        datetick(ax,'x','d','keepticks');
+        ax.XTick = [data_extract(:,1); data_extract(end,1) + 1];
+        datetick(ax,'x','dd-mmm-yy','keepticks');
+        xtickangle(ax,90);
     end
 
 
