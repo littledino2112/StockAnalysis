@@ -13,6 +13,7 @@ function [ status, msg ] = update_stock_db( db_conn )
     debug = true;
     date_added = 0; % This keeps track of how many new date is added to 
                     % local db
+    table_name = 'STOCK';
     % Get the last date available on local db
     sql_query = 'SELECT MAX(DATE) FROM STOCK';
     data = fetch(db_conn, sql_query);
@@ -27,14 +28,19 @@ function [ status, msg ] = update_stock_db( db_conn )
        date_to_download_v2 = datestr(elm,'ddmmyyyy');
        url = ['http://images1.cafef.vn/data/' date_to_download ...
               '/CafeF.SolieuGD.Raw.' date_to_download_v2 '.zip'];
+       url2 = ['http://images1.cafef.vn/data/' date_to_download ...
+              '/CafeF.Index.' date_to_download_v2 '.zip'];          
        path_to_unzip = ['./' date_to_download];
        try
            if (debug)
-              disp(url); 
+              disp(url);
+              disp(url2);
            end
            unzip(url,path_to_unzip);
+           unzip(url2,path_to_unzip);
            
-           % If gets here, there's valid data. Extrace data from file
+           % If gets here, there's valid data 
+           % Extract HOSE stock data from file
            date_format = datestr(elm,'dd.mm.yyyy');
            filename = ['CafeF.RAW_HSX.' date_format '.csv'];
            path_to_file = [path_to_unzip '/' filename];
@@ -45,9 +51,22 @@ function [ status, msg ] = update_stock_db( db_conn )
            colnames = {'SYMBOL','DATE','OPEN','HIGH','LOW','CLOSE', ...
                        'VOLUME'};
            raw_data = table2cell(raw_data);
-           datainsert(db_conn,'STOCK',colnames,raw_data);
-           date_added = date_added + 1;
+           datainsert(db_conn,table_name,colnames,raw_data);
+
+           % Extract INDEX data
+           % If gets here, there's valid data. Extract data from file
+           filename = ['CafeF.INDEX.' date_format '.csv'];
+           path_to_file = [path_to_unzip '/' filename];
+           raw_data = load_data(path_to_file);
+           raw_data.Date = datenum(raw_data.Date);
            
+           % Update data to local database
+           colnames = {'SYMBOL','DATE','OPEN','HIGH','LOW','CLOSE', ...
+                       'VOLUME'};
+           raw_data = table2cell(raw_data);
+           datainsert(db_conn,table_name,colnames,raw_data);
+           date_added = date_added + 1;
+
            % Remove downloaded files
            rmdir(path_to_unzip,'s');
        catch
