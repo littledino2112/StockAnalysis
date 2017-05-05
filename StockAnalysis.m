@@ -81,7 +81,8 @@ function LoadDataButton_Callback(hObject, eventdata, handles)
 % hObject    handle to LoadDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    path_to_database = '/Users/littledino2112/Documents/01_Work/04_Investment/01_StockAnalysis/01_App/StockDB.db';
+    load('config.mat');
+    path_to_database = path_to_db;
     handles.DatabaseConn = database(path_to_database,'','','org.sqlite.JDBC',strcat('jdbc:sqlite:',path_to_database));
     db_conn = handles.DatabaseConn;
     if isempty(db_conn.Message)
