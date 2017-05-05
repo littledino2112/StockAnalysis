@@ -85,6 +85,9 @@ function LoadDataButton_Callback(hObject, eventdata, handles)
     handles.DatabaseConn = database(path_to_database,'','','org.sqlite.JDBC',strcat('jdbc:sqlite:',path_to_database));
     db_conn = handles.DatabaseConn;
     if isempty(db_conn.Message)
+        s = setdbprefs;
+        s.DataReturnFormat = 'table';
+        setdbprefs(s);
         set(handles.LoadDataStatus,'String','Connected to Database');
         % Populate Stock Selection Dropdown list
         sql_query = 'SELECT DISTINCT SYMBOL FROM STOCK';
