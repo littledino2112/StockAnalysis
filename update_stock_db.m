@@ -82,10 +82,10 @@ function [ status, msg ] = update_stock_db( db_conn )
     end
     if (date_added > 0)
        status = true; 
-       msg = [ num2str(date_added) ' date(s) added to Stock table' newline];
+       msg = [ num2str(date_added) ' date(s) added to Stock table'];
     else
        status = false;
-       msg = ['No data added to Stock table' newline];
+       msg = 'No data added to Stock table';
     end
     
 % Update database for HOSE_STOCK_DIFF table
@@ -133,7 +133,7 @@ function [ status, msg ] = update_stock_db( db_conn )
             data_point_added = data_point_added + 1;
         end
         if (data_point_added)
-            msg = strcat(msg,[num2str(data_point_added) ' data points added for ' table_names.HOSE_STOCK_DIFF ' table']);
+            msg = [msg newline num2str(data_point_added) ' data points added for ' table_names.HOSE_STOCK_DIFF ' table'];
         end
     end
     
