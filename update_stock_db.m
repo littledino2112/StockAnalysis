@@ -10,6 +10,7 @@ function [ status, msg ] = update_stock_db( db_conn )
 %   - Update to local db
 %   - Delete downloaded file
     % Local define
+    load config.mat
     debug = true;
     date_added = 0; % This keeps track of how many new date is added to 
                     % local db
@@ -46,10 +47,12 @@ function [ status, msg ] = update_stock_db( db_conn )
            path_to_file = [path_to_unzip '/' filename];
            raw_data = load_data(path_to_file);
            raw_data.Date = datenum(raw_data.Date);
+           temp = num2str(raw_data.Date);
+           raw_data.SymbolDate = strcat(raw_data.Symbol, temp);
            
            % Update data to local database
            colnames = {'SYMBOL','DATE','OPEN','HIGH','LOW','CLOSE', ...
-                       'VOLUME'};
+                       'VOLUME','SYMBOL_DATE'};
            raw_data = table2cell(raw_data);
            datainsert(db_conn,table_name,colnames,raw_data);
 
@@ -59,10 +62,12 @@ function [ status, msg ] = update_stock_db( db_conn )
            path_to_file = [path_to_unzip '/' filename];
            raw_data = load_data(path_to_file);
            raw_data.Date = datenum(raw_data.Date);
+           temp = num2str(raw_data.Date);
+           raw_data.SymbolDate = strcat(raw_data.Symbol, temp);
            
            % Update data to local database
            colnames = {'SYMBOL','DATE','OPEN','HIGH','LOW','CLOSE', ...
-                       'VOLUME'};
+                       'VOLUME','SYMBOL_DATE'};
            raw_data = table2cell(raw_data);
            datainsert(db_conn,table_name,colnames,raw_data);
            date_added = date_added + 1;
@@ -77,11 +82,61 @@ function [ status, msg ] = update_stock_db( db_conn )
     end
     if (date_added > 0)
        status = true; 
-       msg = [ num2str(date_added) ' date(s) added to db'];
+       msg = [ num2str(date_added) ' date(s) added to Stock table' newline];
     else
        status = false;
-       msg = 'No data available';
+       msg = ['No data added to Stock table' newline];
     end
+    
+% Update database for HOSE_STOCK_DIFF table
+% Flows:
+%   - Check for last date available in Stock Diff table
+%   - Get stock data from STOCK table starting from this date (>=)
+%   - Compute necessary data (Close Diff, Close Diff (%), Open-Close Diff, 
+%   Open-Close Diff (%), Vol Diff, Vol Diff (%)
+%   - Insert data to Stock Diff table
+
+    col_names = {'SYMBOL','DATE','CLOSE_DIFF','CLOSE_DIFF_PERCENTAGE',...
+                'OPEN_CLOSE_DIFF','OPEN_CLOSE_DIFF_PERCENTAGE','VOLUME_DIFF','VOLUME_DIFF_PERCENTAGE','SYMBOL_DATE'};
+
+    sql_query = 'SELECT MAX(DATE) FROM HOSE_STOCK_DIFF';
+    data = fetch(db_conn, sql_query);
+    last_date_stock_diff_table = data.MAX_DATE_;
+    
+    % Get last date available on Stock table
+    sql_query = 'SELECT MAX(DATE) FROM STOCK';
+    data = fetch(db_conn, sql_query);
+    last_date_stock_table = data.MAX_DATE_;
+
+    % If both tables are up-to-date then the last dates should be the same.
+    % Otherwise, the STOCK_DIFF_TABLE is not up-to-date
+    if (last_date_stock_table > last_date_stock_diff_table)
+        sql_query = ['SELECT DISTINCT SYMBOL FROM ' table_names.STOCK ' WHERE DATE >= ' num2str(last_date_stock_diff_table)];
+        data = fetch(db_conn, sql_query);
+        symbol_list = table2array(data);
+        len = length(symbol_list);
+        data_point_added = 0;
+        for idx = 1:len
+            sql_query = ['SELECT SYMBOL, DATE, CLOSE, OPEN, VOLUME FROM '...
+                          table_names.STOCK ... 
+                          ' WHERE DATE >= ' num2str(last_date_stock_diff_table)...
+                          ' AND SYMBOL = ''' symbol_list{idx} ''''];
+            symbol_data = fetch(db_conn, sql_query);
+            if (height(symbol_data) == 1)   % If only one data point is available, can't compute diff in this case
+               continue;     
+            end
+            selected_stock = fints(symbol_data.DATE, [symbol_data.OPEN symbol_data.CLOSE symbol_data.VOLUME],{'OPEN', 'CLOSE', 'VOLUME'});
+            diff_results = calculate_diff_data(selected_stock, symbol_list{idx});
+
+            % Update date to HOSE_STOCK_DIFF table
+            datainsert(db_conn,table_names.HOSE_STOCK_DIFF,col_names,diff_results);
+            data_point_added = data_point_added + 1;
+        end
+        if (data_point_added)
+            msg = strcat(msg,[num2str(data_point_added) ' data points added for ' table_names.HOSE_STOCK_DIFF ' table']);
+        end
+    end
+    
     if (debug)
        disp(msg); 
     end
