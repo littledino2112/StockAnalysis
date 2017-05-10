@@ -15,7 +15,8 @@ curs = exec(conn, ['CREATE TABLE IF NOT EXISTS ' table_name '('...
                   'OPEN_CLOSE_DIFF             REAL,'...
                   'OPEN_CLOSE_DIFF_PERCENTAGE  REAL,'...
                   'VOLUME_DIFF                 INTEGER,'...
-                  'VOLUME_DIFF_PERCENTAGE      REAL);']);
+                  'VOLUME_DIFF_PERCENTAGE      REAL,'...
+                  'SYMBOL_DATE                 TEXT UNIQUE);']);
 close(curs);
 final_data = [];
 % For every stock in the list:
@@ -40,4 +41,6 @@ for idx = 1:len
 end
 final_data = cell2table(final_data);
 final_data.Properties.VariableNames = colnames;
+temp = num2str(final_data.DATE);
+final_data.SYMBOL_DATE = strcat(final_data.SYMBOL, temp);
 writetable(final_data,'exported_hose_stock_diff_data.csv','WriteVariableNames',0);
