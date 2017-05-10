@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 03-May-2017 23:03:03
+% Last Modified by GUIDE v2.5 10-May-2017 17:07:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -446,3 +446,23 @@ function edit6_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in MarketTrendButton.
+function MarketTrendButton_Callback(hObject, eventdata, handles)
+% hObject    handle to MarketTrendButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    duration = handles.DurationEdit.String;
+    duration = str2double(duration);
+    [dates, results] = compute_market_trend(handles.DatabaseConn,duration);
+    figure('Name','Market trend');
+    subplot(2,1,1);
+    if ~isempty(handles.SelectedStock)
+        candle(handles.SelectedStock);
+    end
+    ax = subplot(2,1,2);
+    plot(ax,dates,results);
+    ax.XTick = linspace(dates(1),dates(end)+1,4);
+    datetick(ax,'x','dd-mmm-yy','keepticks');
+    xtickangle(ax,90);
