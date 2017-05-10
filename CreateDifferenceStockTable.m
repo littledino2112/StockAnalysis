@@ -40,4 +40,4 @@ for idx = 1:len
 end
 final_data = cell2table(final_data);
 final_data.Properties.VariableNames = colnames;
-writetable(final_data,'exported_hose_stock_diff_data.csv');
+writetable(final_data,'exported_hose_stock_diff_data.csv','WriteVariableNames',0);
