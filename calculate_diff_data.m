@@ -1,6 +1,6 @@
 function [ diff_results ] = calculate_diff_data( input_stock_data, stock_symbol )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+% Input time series object needs to contain following fields: DATE, OPEN, CLOSE
+% and VOLUME
     [selected_stock_diff, selected_stock_percentage_change] = CalculatePercentageChangeOfStock(input_stock_data);
     
     % Extract data to a cell
@@ -18,7 +18,7 @@ function [ diff_results ] = calculate_diff_data( input_stock_data, stock_symbol 
     open_close_diff = round(open_close_diff*100)/100;
     open_close_diff_percentage = round(open_close_diff_percentage*1000)/10;
     
-    diff_results = cell([length(vol_diff) 8]); % 8 rows as created for the table above
+    diff_results = cell([length(vol_diff) 9]); % 9 rows as created for the table above
     symbol_name = {stock_symbol};
     symbol_name = symbol_name(ones(length(vol_diff),1),:);
     diff_results(:,1) = symbol_name; % For SYMBOL
@@ -29,6 +29,9 @@ function [ diff_results ] = calculate_diff_data( input_stock_data, stock_symbol 
     diff_results(:,6) = num2cell(open_close_diff_percentage); % For Open_Close_Diff in percentage
     diff_results(:,7) = num2cell(vol_diff);    % For Volume_Diff
     diff_results(:,8) = num2cell(vol_diff_per); % For Volume_Diff in percentage
+    % For Symbol_Date column
+    temp = num2str(close_diff(:,1));
+    diff_results(:,9) = strcat(symbol_name,temp);
 end
 
 
