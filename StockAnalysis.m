@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 11-May-2017 09:20:10
+% Last Modified by GUIDE v2.5 11-May-2017 11:32:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -421,17 +421,24 @@ function FilterButton_Callback(hObject, eventdata, handles)
 % Flows:
 %   - Check which condition is checked
 %   - 
-    sql_query = '';
     date_start = handles.FilterDateRangeEdit.String;
     date_start = floor(now) - str2double(date_start);
+    stock_diff_table = handles.Database.TableNames.HOSE_STOCK_DIFF;
+    stock_table = handles.Database.TableNames.STOCK;
     if handles.FilterPriceChangeCheck.Value
        price_change_in_percentage = handles.FilterPriceChangeEdit.String;
-       sql_query = ['SELECT SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE FROM ' handles.Database.TableNames.HOSE_STOCK_DIFF ' '...
-                    'WHERE DATE > ' num2str(date_start) ' '...
-                    'GROUP BY SYMBOL '...
+       sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, SUM(VOLUME) AS SUM_VOLUME '...
+                    'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
+                    'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
+                    'WHERE ' stock_diff_table '.DATE > ' num2str(date_start) ' '...
+                    'GROUP BY ' stock_diff_table '.SYMBOL '...
                     'HAVING SUM_PRICE_CHANGE > ' price_change_in_percentage ' '...
                     'ORDER BY SUM_PRICE_CHANGE DESC'];
        symbol_list = fetch(handles.DatabaseConn, sql_query);
+       symbol_list = table2cell(symbol_list);
+       col_names = {'Symbol','Sum Price Change','Sum Volume'};
+       handles.FilterStockTable.ColumnName = col_names;
+       handles.FilterStockTable.Data = symbol_list;
     end
 
 
@@ -482,3 +489,16 @@ function pushbutton9_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton9 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when selected cell(s) is changed in FilterStockTable.
+function FilterStockTable_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to FilterStockTable (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+    selected_item = hObject.Data(eventdata.Indices(1),eventdata.Indices(2));
+    idx = find(strcmp(handles.StockSelectionMenu.String,selected_item));
+    if ~(isempty(idx))
+       handles.StockSelectionMenu.Value = idx;
+    end
