@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 11-May-2017 11:32:16
+% Last Modified by GUIDE v2.5 11-May-2017 21:23:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -189,7 +189,7 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     ax = subplot(3,1,3);
     data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
     bar(data_extract(:,1),data_extract(:,2));
-    ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,4);
+    ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
     datetick(ax,'x','dd-mmm-yy','keepticks');
 end
 
@@ -239,18 +239,18 @@ function MainFigure_SizeChangedFcn(hObject, eventdata, handles)
 
 
 
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function FilterPriceEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterPriceEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+% Hints: get(hObject,'String') returns contents of FilterPriceEdit as text
+%        str2double(get(hObject,'String')) returns contents of FilterPriceEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function FilterPriceEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FilterPriceEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -376,13 +376,13 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in FilterVolumeCheck.
-function FilterVolumeCheck_Callback(hObject, eventdata, handles)
-% hObject    handle to FilterVolumeCheck (see GCBO)
+% --- Executes on button press in FilterPriceCheck.
+function FilterPriceCheck_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterPriceCheck (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of FilterVolumeCheck
+% Hint: get(hObject,'Value') returns toggle state of FilterPriceCheck
 
 
 % --- Executes on button press in FilterVolumeChangeCheck.
@@ -416,23 +416,34 @@ date_start = handles.FilterDateRangeEdit.String;
 date_start = get_last_date(handles.DatabaseConn, handles.Database.TableNames.HOSE_STOCK_DIFF) - str2double(date_start);
 stock_diff_table = handles.Database.TableNames.HOSE_STOCK_DIFF;
 stock_table = handles.Database.TableNames.STOCK;
+condition_added = 0;
+sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE '...
+             'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
+             'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
+             'WHERE ' stock_diff_table '.DATE > ' num2str(date_start) ' '...
+             'GROUP BY ' stock_diff_table '.SYMBOL '];
+if handles.FilterPriceCheck.Value
+   price_close = handles.FilterPriceEdit.String;
+   sql_query = [sql_query 'HAVING MAX_CLOSE >= ' price_close ' '];
+   condition_added = condition_added + 1;
+end
 if handles.FilterPriceChangeCheck.Value
    price_change_in_percentage = handles.FilterPriceChangeEdit.String;
-   sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE '...
-                'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
-                'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
-                'WHERE ' stock_diff_table '.DATE > ' num2str(date_start) ' '...
-                'GROUP BY ' stock_diff_table '.SYMBOL '...
-                'HAVING SUM_PRICE_CHANGE > ' price_change_in_percentage ' '...
-                'ORDER BY SUM_PRICE_CHANGE DESC'];
-   symbol_list = fetch(handles.DatabaseConn, sql_query);
-   if ~(isempty(symbol_list))
-       symbol_list = table2cell(symbol_list);
-       col_names = {'Symbol','Sum Price Change','Average Volume','Max Close'};
-       handles.FilterStockTable.ColumnName = col_names;
-       handles.FilterStockTable.Data = symbol_list; 
-   end  
+   if (condition_added)
+      sql_query = [sql_query 'AND '];
+   else
+      sql_query = [sql_query 'HAVING '];
+   end
+   sql_query = [sql_query 'SUM_PRICE_CHANGE >=' price_change_in_percentage ' '];
 end
+sql_query = [sql_query 'ORDER BY SUM_PRICE_CHANGE DESC'];
+symbol_list = fetch(handles.DatabaseConn, sql_query);
+if ~(isempty(symbol_list))
+    symbol_list = table2cell(symbol_list);
+    col_names = {'Symbol','Sum Price Change','Average Volume','Max Close'};
+    handles.FilterStockTable.ColumnName = col_names;
+    handles.FilterStockTable.Data = symbol_list; 
+end  
 
 
 function FilterDateRangeEdit_Callback(hObject, eventdata, handles)
@@ -472,6 +483,7 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
 end
 ax = subplot(2,1,2);
 plot(ax,dates,results);
+title('Cumulative Advance-Decline line');
 ax.XTick = linspace(dates(1),dates(end)+1,4);
 datetick(ax,'x','dd-mmm-yy','keepticks');
 xtickangle(ax,90);
