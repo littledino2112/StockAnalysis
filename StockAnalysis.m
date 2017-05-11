@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 10-May-2017 17:07:01
+% Last Modified by GUIDE v2.5 11-May-2017 09:20:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -292,18 +292,18 @@ end
 
 
 
-function edit5_Callback(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
+function FilterPriceChangeEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterPriceChangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double
+% Hints: get(hObject,'String') returns contents of FilterPriceChangeEdit as text
+%        str2double(get(hObject,'String')) returns contents of FilterPriceChangeEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
+function FilterPriceChangeEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FilterPriceChangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -426,18 +426,18 @@ function FilterButton_Callback(hObject, eventdata, handles)
     end
 
 
-function edit6_Callback(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
+function FilterDateRangeEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterDateRangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit6 as text
-%        str2double(get(hObject,'String')) returns contents of edit6 as a double
+% Hints: get(hObject,'String') returns contents of FilterDateRangeEdit as text
+%        str2double(get(hObject,'String')) returns contents of FilterDateRangeEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit6_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
+function FilterDateRangeEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FilterDateRangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -466,3 +466,10 @@ function MarketTrendButton_Callback(hObject, eventdata, handles)
     ax.XTick = linspace(dates(1),dates(end)+1,4);
     datetick(ax,'x','dd-mmm-yy','keepticks');
     xtickangle(ax,90);
+
+
+% --- Executes on button press in pushbutton9.
+function pushbutton9_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
