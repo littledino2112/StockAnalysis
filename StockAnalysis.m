@@ -427,7 +427,7 @@ function FilterButton_Callback(hObject, eventdata, handles)
     stock_table = handles.Database.TableNames.STOCK;
     if handles.FilterPriceChangeCheck.Value
        price_change_in_percentage = handles.FilterPriceChangeEdit.String;
-       sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, SUM(VOLUME) AS SUM_VOLUME '...
+       sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE '...
                     'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
                     'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
                     'WHERE ' stock_diff_table '.DATE > ' num2str(date_start) ' '...
@@ -435,10 +435,12 @@ function FilterButton_Callback(hObject, eventdata, handles)
                     'HAVING SUM_PRICE_CHANGE > ' price_change_in_percentage ' '...
                     'ORDER BY SUM_PRICE_CHANGE DESC'];
        symbol_list = fetch(handles.DatabaseConn, sql_query);
-       symbol_list = table2cell(symbol_list);
-       col_names = {'Symbol','Sum Price Change','Sum Volume'};
-       handles.FilterStockTable.ColumnName = col_names;
-       handles.FilterStockTable.Data = symbol_list;
+       if ~(isempty(symbol_list))
+           symbol_list = table2cell(symbol_list);
+           col_names = {'Symbol','Sum Price Change','Average Volume','Max Close'};
+           handles.FilterStockTable.ColumnName = col_names;
+           handles.FilterStockTable.Data = symbol_list; 
+       end  
     end
 
 
@@ -501,4 +503,5 @@ function FilterStockTable_CellSelectionCallback(hObject, eventdata, handles)
     idx = find(strcmp(handles.StockSelectionMenu.String,selected_item));
     if ~(isempty(idx))
        handles.StockSelectionMenu.Value = idx;
+       StockSelectionMenu_Callback(handles.StockSelectionMenu, eventdata, handles); 
     end
