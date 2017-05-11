@@ -412,7 +412,7 @@ function FilterButton_Callback(hObject, eventdata, handles)
 %   - Check which condition is checked
 %   - 
 date_start = handles.FilterDateRangeEdit.String;
-date_start = floor(now) - str2double(date_start);
+date_start = get_last_date(handles.DatabaseConn, handles.Database.TableNames.HOSE_STOCK_DIFF) - str2double(date_start);
 stock_diff_table = handles.Database.TableNames.HOSE_STOCK_DIFF;
 stock_table = handles.Database.TableNames.STOCK;
 if handles.FilterPriceChangeCheck.Value
