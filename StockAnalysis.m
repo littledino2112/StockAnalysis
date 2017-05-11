@@ -56,7 +56,9 @@ function StockAnalysis_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % Application variables
+load config.mat
 handles.DatabaseConn = '';
+handles.Database.TableNames = table_names;
 handles.SelectedStock = [];
 % Update handles structure
 guidata(hObject, handles);
@@ -420,9 +422,16 @@ function FilterButton_Callback(hObject, eventdata, handles)
 %   - Check which condition is checked
 %   - 
     sql_query = '';
+    date_start = handles.FilterDateRangeEdit.String;
+    date_start = floor(now) - str2double(date_start);
     if handles.FilterPriceChangeCheck.Value
-       sql_query = 'SELECT * FROM STOCK ';
-       sql_query = [sql_query 'WHERE '];
+       price_change_in_percentage = handles.FilterPriceChangeEdit.String;
+       sql_query = ['SELECT SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE FROM ' handles.Database.TableNames.HOSE_STOCK_DIFF ' '...
+                    'WHERE DATE > ' num2str(date_start) ' '...
+                    'GROUP BY SYMBOL '...
+                    'HAVING SUM_PRICE_CHANGE > ' price_change_in_percentage ' '...
+                    'ORDER BY SUM_PRICE_CHANGE DESC'];
+       symbol_list = fetch(handles.DatabaseConn, sql_query);
     end
 
 
