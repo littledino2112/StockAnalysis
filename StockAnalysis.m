@@ -189,9 +189,8 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     ax = subplot(3,1,3);
     data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
     bar(data_extract(:,1),data_extract(:,2));
-    ax.XTick = [data_extract(:,1); data_extract(end,1) + 1];
+    ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,4);
     datetick(ax,'x','dd-mmm-yy','keepticks');
-    xtickangle(ax,90);
 end
 
 
