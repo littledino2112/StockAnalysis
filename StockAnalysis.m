@@ -59,7 +59,8 @@ handles.output = hObject;
 load config.mat
 handles.DatabaseConn = '';
 handles.Database.TableNames = table_names;
-handles.SelectedStock = [];
+handles.SelectedStock.TimeSeriesObj = [];
+handles.SelectedStock.Name = '';
 % Connect to database
 path_to_database = path_to_db;
 handles.DatabaseConn = database(path_to_database,'','','org.sqlite.JDBC',strcat('jdbc:sqlite:',path_to_database));
@@ -130,8 +131,9 @@ function StockSelectionMenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns StockSelectionMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from StockSelectionMenu
-[valid, selected_stock] = query_stock(handles);
-handles.SelectedStock = selected_stock;
+[valid, selected_stock, stock_name] = query_stock(handles);
+handles.SelectedStock.TimeSeriesObj = selected_stock;
+handles.SelectedStock.Name = stock_name;
 guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -155,7 +157,7 @@ function DurationEdit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of DurationEdit as text
 %        str2double(get(hObject,'String')) returns contents of DurationEdit as a double
 [valid, selected_stock] = query_stock(handles);
-handles.SelectedStock = selected_stock;
+handles.SelectedStock.TimeSeriesObj = selected_stock;
 guidata(hObject, handles);
 
     
@@ -177,15 +179,15 @@ function OBVChartButton_Callback(hObject, eventdata, handles)
 % hObject    handle to OBVChartButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isempty(handles.SelectedStock)
-    figure('Name','On Balance Volume');
+if ~isempty(handles.SelectedStock.TimeSeriesObj)
+    figure('Name',['On Balance Volume - ' handles.SelectedStock.Name]);
     subplot(3,1,1);
-    candle(handles.SelectedStock);
+    candle(handles.SelectedStock.TimeSeriesObj);
     subplot(3,1,2);   
-    plot(onbalvol(handles.SelectedStock));
+    plot(onbalvol(handles.SelectedStock.TimeSeriesObj));
     % Plot volume in bar graph
     ax = subplot(3,1,3);
-    data_extract = fts2mat(handles.SelectedStock.VOLUME,1);
+    data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
     bar(data_extract(:,1),data_extract(:,2));
     ax.XTick = [data_extract(:,1); data_extract(end,1) + 1];
     datetick(ax,'x','dd-mmm-yy','keepticks');
@@ -205,9 +207,9 @@ function CandleChartButton_Callback(hObject, eventdata, handles)
 % hObject    handle to CandleChartButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isempty(handles.SelectedStock)
-    figure('Name','Candle Chart');
-    candle(handles.SelectedStock);
+if ~isempty(handles.SelectedStock.TimeSeriesObj)
+    figure('Name',['Candle Chart - ' handles.SelectedStock.Name]);
+    candle(handles.SelectedStock.TimeSeriesObj);
 end
 
 
@@ -464,10 +466,10 @@ function MarketTrendButton_Callback(hObject, eventdata, handles)
 duration = handles.DurationEdit.String;
 duration = str2double(duration);
 [dates, results] = compute_market_trend(handles.DatabaseConn,duration);
-figure('Name','Market trend');
+figure('Name',['Market trend - ' handles.SelectedStock.Name]);
 subplot(2,1,1);
-if ~isempty(handles.SelectedStock)
-    candle(handles.SelectedStock);
+if ~isempty(handles.SelectedStock.TimeSeriesObj)
+    candle(handles.SelectedStock.TimeSeriesObj);
 end
 ax = subplot(2,1,2);
 plot(ax,dates,results);
