@@ -60,6 +60,23 @@ load config.mat
 handles.DatabaseConn = '';
 handles.Database.TableNames = table_names;
 handles.SelectedStock = [];
+% Connect to database
+path_to_database = path_to_db;
+handles.DatabaseConn = database(path_to_database,'','','org.sqlite.JDBC',strcat('jdbc:sqlite:',path_to_database));
+db_conn = handles.DatabaseConn;
+if isempty(db_conn.Message)
+    s = setdbprefs;
+    s.DataReturnFormat = 'table';
+    setdbprefs(s);
+    set(handles.LoadDataStatus,'String','Connected to Database');
+    % Populate Stock Selection Dropdown list
+    sql_query = 'SELECT DISTINCT SYMBOL FROM STOCK';
+    data = fetch(db_conn, sql_query);
+    set(handles.StockSelectionMenu,'String',data.SYMBOL);
+else
+    set(handles.LoadDataStatus,'String','Error connect to Database');
+end
+
 % Update handles structure
 guidata(hObject, handles);
 
