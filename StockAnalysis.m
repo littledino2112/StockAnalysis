@@ -477,18 +477,19 @@ duration = handles.DurationEdit.String;
 duration = str2double(duration);
 [dates, results] = compute_market_trend(handles.DatabaseConn,duration);
 % Compute simple moving average on 5-day basis
-sma = tsmovavg(results,'s',5,2); % 2 indicates the input vector is row-oriented matrix where each column is an observation
+sma5 = tsmovavg(results,'s',5,2); % 2 indicates the input vector is row-oriented matrix where each column is an observation
+sma20 = tsmovavg(results,'s',20,2);
 figure('Name',['Market trend - ' handles.SelectedStock.Name]);
 subplot(2,1,1);
 if ~isempty(handles.SelectedStock.TimeSeriesObj)
     candle(handles.SelectedStock.TimeSeriesObj);
 end
 ax = subplot(2,1,2);
-plot(ax,dates,results,dates,sma);
+plot(ax,dates,results,dates,sma5,dates,sma20);
 title('Cumulative Advance-Decline line');
 ax.XTick = linspace(dates(1),dates(end)+1,4);
 datetick(ax,'x','dd-mmm-yy','keepticks');
-legend('Raw data','SMA5');
+legend('Raw data','SMA5','SMA20');
 xtickangle(ax,90);
 
 
