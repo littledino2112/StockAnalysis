@@ -184,7 +184,17 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     subplot(3,1,1);
     candle(handles.SelectedStock.TimeSeriesObj);
     subplot(3,1,2);   
-    plot(onbalvol(handles.SelectedStock.TimeSeriesObj));
+    obv = onbalvol(handles.SelectedStock.TimeSeriesObj);
+    % Compute SMA5 and SMA20 for OBV
+    sma5 = tsmovavg(obv,'s',5);
+    sma10 = tsmovavg(obv,'s',10);
+    plot(obv);
+    hold on;
+    plot(sma5);
+    plot(sma10);
+    legend('Raw data','SMA5','SMA10');
+    hold off;
+    
     % Plot volume in bar graph
     ax = subplot(3,1,3);
     data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
