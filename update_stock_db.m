@@ -1,6 +1,8 @@
 function [ status, msg ] = update_stock_db( db_conn )
 % This function checks for any new daily update from the cafef database and
 % updates them to my local stock database
+% Update stock_diff table
+% Update hose_sell_buy national and hose_sell_buy_foreigner tables
 % Flows:
 %   - Get the last date available on the db and compare that with now
 %   (using serial num format)
@@ -29,16 +31,19 @@ function [ status, msg ] = update_stock_db( db_conn )
        date_to_download_v2 = datestr(elm,'ddmmyyyy');
        url = ['http://images1.cafef.vn/data/' date_to_download ...
               '/CafeF.SolieuGD.Raw.' date_to_download_v2 '.zip'];
-       url2 = ['http://images1.cafef.vn/data/' date_to_download ...
-              '/CafeF.Index.' date_to_download_v2 '.zip'];          
+       url_idx = ['http://images1.cafef.vn/data/' date_to_download ...
+              '/CafeF.Index.' date_to_download_v2 '.zip'];
+       url_sell_buy = ['http://images1.cafef.vn/data/' date_to_download ...
+              '/CafeF.CCNN.' date_to_download_v2 '.zip'];
        path_to_unzip = ['./' date_to_download];
        try
            if (debug)
               disp(url);
-              disp(url2);
+              disp(url_idx);
            end
            unzip(url,path_to_unzip);
-           unzip(url2,path_to_unzip);
+           unzip(url_idx,path_to_unzip);
+           unzip(url_sell_buy,path_to_unzip);
            
            % If gets here, there's valid data 
            % Extract HOSE stock data from file
@@ -70,8 +75,34 @@ function [ status, msg ] = update_stock_db( db_conn )
                        'VOLUME','SYMBOL_DATE'};
            raw_data = table2cell(raw_data);
            datainsert(db_conn,table_name,colnames,raw_data);
-           date_added = date_added + 1;
 
+           
+           % Update data to SELL_BUY tables
+           colnames = {'SYMBOL','DATE','BUY','SELL','SYMBOL_DATE'};
+           filename_national = ['CafeF.CC_HSX.' date_format '.csv'];
+           data_colnames = {'Symbol','Date','Open','High','Low','Close','Buy','Sell'};
+           sell_buy_national = load_sell_buy_data(filename_national,data_colnames);
+           sell_buy_national.Date = datenum(sell_buy_national.Date);
+           date_temp = num2str(sell_buy_national.Date);
+           sell_buy_national.Symbol = cellfun(@(x) x(4:end),sell_buy_national.Symbol,'UniformOutput',false);
+           sell_buy_national.SymbolDate = strcat(sell_buy_national.Symbol,date_temp);
+           sell_buy_national(:,{'Open','High','Low','Close'}) = [];
+           sell_buy_national = table2cell(sell_buy_national); 
+           datainsert(db_conn,'HOSE_SELL_BUY_NATIONAL',colnames,sell_buy_national);
+           
+           filename_foreigners = ['CafeF.NN_HSX.' date_format '.csv'];
+           data_colnames = {'Symbol','Date','Buy','High','Low','Sell','Volume','OI'};
+           sell_buy_foreigners = load_sell_buy_data(filename_foreigners,data_colnames);
+           sell_buy_foreigners.Date = datenum(sell_buy_foreigners.Date);
+           date_temp = num2str(sell_buy_foreigners.Date);
+           sell_buy_foreigners.Symbol = cellfun(@(x) x(4:end),sell_buy_foreigners.Symbol,'UniformOutput',false);
+           sell_buy_foreigners.SymbolDate = strcat(sell_buy_foreigners.Symbol,date_temp);
+           sell_buy_foreigners(:,{'Volume','High','Low','OI'}) = [];
+           sell_buy_foreigners = table2cell(sell_buy_foreigners);
+           datainsert(db_conn,'HOSE_SELL_BUY_FOREIGNER',colnames,sell_buy_foreigners);
+           
+           date_added = date_added + 1;
+           
            % Remove downloaded files
            rmdir(path_to_unzip,'s');
        catch
@@ -142,3 +173,13 @@ function [ status, msg ] = update_stock_db( db_conn )
     end
 end
 
+
+function [raw_data] = load_sell_buy_data(input_file,colume_names)
+    opts = detectImportOptions(input_file);
+    opts.VariableNames = colume_names;
+    opts = opts.setvartype('Date','datetime');
+    opts = opts.setvaropts('Date','InputFormat','yyyyMMdd');
+    opts = opts.setvaropts('Date','DatetimeFormat','ddMMMyyyy');
+    temp_data = readtable(input_file,opts);
+    raw_data = temp_data;
+end
