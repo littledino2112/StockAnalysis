@@ -40,6 +40,7 @@ function [ status, msg ] = update_stock_db( db_conn )
            if (debug)
               disp(url);
               disp(url_idx);
+              disp(url_sell_buy);
            end
            unzip(url,path_to_unzip);
            unzip(url_idx,path_to_unzip);
@@ -80,8 +81,9 @@ function [ status, msg ] = update_stock_db( db_conn )
            % Update data to SELL_BUY tables
            colnames = {'SYMBOL','DATE','BUY','SELL','SYMBOL_DATE'};
            filename_national = ['CafeF.CC_HSX.' date_format '.csv'];
+           path_to_file = [path_to_unzip '/' filename_national];
            data_colnames = {'Symbol','Date','Open','High','Low','Close','Buy','Sell'};
-           sell_buy_national = load_sell_buy_data(filename_national,data_colnames);
+           sell_buy_national = load_sell_buy_data(path_to_file,data_colnames);
            sell_buy_national.Date = datenum(sell_buy_national.Date);
            date_temp = num2str(sell_buy_national.Date);
            sell_buy_national.Symbol = cellfun(@(x) x(4:end),sell_buy_national.Symbol,'UniformOutput',false);
@@ -91,8 +93,9 @@ function [ status, msg ] = update_stock_db( db_conn )
            datainsert(db_conn,'HOSE_SELL_BUY_NATIONAL',colnames,sell_buy_national);
            
            filename_foreigners = ['CafeF.NN_HSX.' date_format '.csv'];
+           path_to_file = [path_to_unzip '/' filename_foreigners];
            data_colnames = {'Symbol','Date','Buy','High','Low','Sell','Volume','OI'};
-           sell_buy_foreigners = load_sell_buy_data(filename_foreigners,data_colnames);
+           sell_buy_foreigners = load_sell_buy_data(path_to_file,data_colnames);
            sell_buy_foreigners.Date = datenum(sell_buy_foreigners.Date);
            date_temp = num2str(sell_buy_foreigners.Date);
            sell_buy_foreigners.Symbol = cellfun(@(x) x(4:end),sell_buy_foreigners.Symbol,'UniformOutput',false);
