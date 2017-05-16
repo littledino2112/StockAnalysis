@@ -487,8 +487,8 @@ duration = handles.DurationEdit.String;
 duration = str2double(duration);
 [dates, results] = compute_market_trend(handles.DatabaseConn,duration);
 % Compute simple moving average on 5-day basis
-sma5 = tsmovavg(results,'s',5,2); % 2 indicates the input vector is row-oriented matrix where each column is an observation
-sma20 = tsmovavg(results,'s',20,2);
+sma5 = tsmovavg(results,'s',5,1); % 1 indicates the input vector is column-oriented matrix where each row is an observation
+sma20 = tsmovavg(results,'s',20,1);
 figure('Name',['Market trend - ' handles.SelectedStock.Name]);
 subplot(2,1,1);
 if ~isempty(handles.SelectedStock.TimeSeriesObj)
