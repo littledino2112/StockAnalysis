@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 11-May-2017 21:23:43
+% Last Modified by GUIDE v2.5 16-May-2017 10:45:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -522,3 +522,43 @@ if ~(isempty(idx))
    handles.StockSelectionMenu.Value = idx;
    StockSelectionMenu_Callback(handles.StockSelectionMenu, eventdata, handles); 
 end
+
+
+% --- Executes on button press in SupplyDemandAnalysisButton.
+function SupplyDemandAnalysisButton_Callback(hObject, eventdata, handles)
+% hObject    handle to SupplyDemandAnalysisButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% This callback queries sell and buy numbers from national and foreign
+% investors and plots them together with candle chart
+stock_symbol = handles.SelectedStock.Name;
+duration = handles.DurationEdit.String;
+date_start = get_last_date(handles.DatabaseConn, handles.Database.TableNames.HOSE_SELL_BUY_NATIONAL) - str2double(duration);
+sb_national = handles.Database.TableNames.HOSE_SELL_BUY_NATIONAL;
+sb_foreigner = handles.Database.TableNames.HOSE_SELL_BUY_FOREIGNER;
+sql_query = ['SELECT ' sb_national '.DATE AS DATE, (' sb_national '.BUY - ' sb_national '.SELL) AS DIFF, ('...
+             sb_foreigner '.BUY - ' sb_foreigner '.SELL) AS FOREIGN_DIFF FROM ' sb_national ' INNER JOIN '...
+             sb_foreigner ' ON ' sb_national '.SYMBOL_DATE = ' sb_foreigner '.SYMBOL_DATE '...
+            'WHERE ' sb_national '.DATE > ' num2str(date_start) ' AND ' sb_national '.SYMBOL = ''' stock_symbol ''''] ;
+data = fetch(handles.DatabaseConn, sql_query);
+ts_data = fints(data.DATE, [data.DIFF data.FOREIGN_DIFF], {'SDNational','SDForeign'});
+ts_data_national = cumsum(ts_data.SDNational);
+ts_data_foreign = cumsum(ts_data.SDForeign);
+figure('Name',['Supply Demand - ' handles.SelectedStock.Name]);
+subplot(3,1,1);
+candle(handles.SelectedStock.TimeSeriesObj);
+title('Candle chart');
+subplot(3,1,2);
+title('Cumulative (Demand - Supply)');
+yyaxis left;
+plot(ts_data_national);
+ylabel('Cumulative stocks');
+yyaxis right;
+plot(ts_data_foreign);
+legend('National investors','Foreign investors');
+% Plot volume in bar graph
+ax = subplot(3,1,3);
+data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
+bar(data_extract(:,1),data_extract(:,2));
+ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
+datetick(ax,'x','dd-mmm-yy','keepticks');
