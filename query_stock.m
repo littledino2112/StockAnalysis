@@ -1,25 +1,14 @@
-function [ valid, selected_stock, stock_name ] = query_stock( handles )
+function [ msg, selected_stock] = query_stock(db_conn, table_name, stock_name, start_date )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-    stocklist = get(handles.StockSelectionMenu,'String');
-    idx = get(handles.StockSelectionMenu,'Value');
-    stock_name = stocklist{idx};
-    duration = get(handles.DurationEdit,'String');
-    duration = str2double(duration);
-    db_conn = handles.DatabaseConn;
-    start_date = num2str(floor(now) - duration);
-    sql_query = ['SELECT * FROM STOCK WHERE SYMBOL = ''' stock_name ''' AND DATE > ' start_date];
-    symbol_data = fetch(db_conn, sql_query);
-    if isempty(symbol_data)
-        valid = false;
+    sql_query = ['SELECT * FROM ' table_name ' WHERE SYMBOL = ''' stock_name ''' AND DATE > ' start_date];
+    selected_stock = fetch(db_conn, sql_query);
+    if isempty(selected_stock)
         % Pop up error message here
-        set(handles.StockLoadStatus,'String','No data available');
         selected_stock = [];
+        msg = 'No Data available';
     else
-        valid = true;
-        selected_stock = fints(symbol_data.DATE, [symbol_data.OPEN symbol_data.HIGH symbol_data.LOW symbol_data.CLOSE symbol_data.VOLUME],...
-                        {'OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME'});
-        set(handles.StockLoadStatus,'String','Data loaded');
+        msg = 'Data loaded';
     end
 
 end

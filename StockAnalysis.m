@@ -131,9 +131,21 @@ function StockSelectionMenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns StockSelectionMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from StockSelectionMenu
-[valid, selected_stock, stock_name] = query_stock(handles);
+% Get information from GUI
+stocklist = handles.StockSelectionMenu.String;
+idx = handles.StockSelectionMenu.Value;
+stock_name = stocklist{idx};
+duration = handles.DurationEdit.String;
+duration = str2double(duration);
+db_conn = handles.DatabaseConn;
+start_date = num2str(floor(now) - duration);
+
+[msg, selected_stock] = query_stock(handles.DatabaseConn,handles.Database.TableNames.STOCK,stock_name,start_date);
+selected_stock = fints(selected_stock.DATE, [selected_stock.OPEN selected_stock.HIGH selected_stock.LOW selected_stock.CLOSE selected_stock.VOLUME],...
+                {'OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME'});
 handles.SelectedStock.TimeSeriesObj = selected_stock;
 handles.SelectedStock.Name = stock_name;
+handles.StockLoadStatus.String = msg;
 guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -156,8 +168,20 @@ function DurationEdit_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of DurationEdit as text
 %        str2double(get(hObject,'String')) returns contents of DurationEdit as a double
-[valid, selected_stock] = query_stock(handles);
+stocklist = handles.StockSelectionMenu.String;
+idx = handles.StockSelectionMenu.Value;
+stock_name = stocklist{idx};
+duration = handles.DurationEdit.String;
+duration = str2double(duration);
+db_conn = handles.DatabaseConn;
+start_date = num2str(floor(now) - duration);
+
+[msg, selected_stock] = query_stock(handles.DatabaseConn,handles.Database.TableNames.STOCK,stock_name,start_date);
+selected_stock = fints(selected_stock.DATE, [selected_stock.OPEN selected_stock.HIGH selected_stock.LOW selected_stock.CLOSE selected_stock.VOLUME],...
+                {'OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME'});
 handles.SelectedStock.TimeSeriesObj = selected_stock;
+handles.SelectedStock.Name = stock_name;
+handles.StockLoadStatus.String = msg;
 guidata(hObject, handles);
 
     
