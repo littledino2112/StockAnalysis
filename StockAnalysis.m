@@ -451,30 +451,40 @@ date_start = get_last_date(handles.DatabaseConn, handles.Database.TableNames.HOS
 stock_diff_table = handles.Database.TableNames.HOSE_STOCK_DIFF;
 stock_table = handles.Database.TableNames.STOCK;
 condition_added = 0;
-sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE '...
+sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE, '...
+             'MAX(VOLUME_DIFF_PERCENTAGE) AS MAX_VOLUME_DIFF '...
              'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
              'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
              'WHERE ' stock_diff_table '.DATE > ' num2str(date_start) ' '...
              'GROUP BY ' stock_diff_table '.SYMBOL '];
 if handles.FilterPriceCheck.Value
-   price_close = handles.FilterPriceEdit.String;
-   sql_query = [sql_query 'HAVING MAX_CLOSE >= ' price_close ' '];
-   condition_added = condition_added + 1;
+    price_close = handles.FilterPriceEdit.String;
+    sql_query = [sql_query 'HAVING MAX_CLOSE >= ' price_close ' '];
+    condition_added = condition_added + 1;
+end
+if handles.FilterVolumeChangeCheck.Value
+    vol_change_in_percentage = handles.FilterVolumeChangeEdit.String;
+    if (condition_added)
+      sql_query = [sql_query 'AND '];
+    else
+      sql_query = [sql_query 'HAVING '];
+    end
+    sql_query = [sql_query 'MAX_VOLUME_DIFF > ' vol_change_in_percentage ' '];
 end
 if handles.FilterPriceChangeCheck.Value
-   price_change_in_percentage = handles.FilterPriceChangeEdit.String;
-   if (condition_added)
+    price_change_in_percentage = handles.FilterPriceChangeEdit.String;
+    if (condition_added)
       sql_query = [sql_query 'AND '];
-   else
+    else
       sql_query = [sql_query 'HAVING '];
-   end
-   sql_query = [sql_query 'SUM_PRICE_CHANGE >=' price_change_in_percentage ' '];
+    end
+    sql_query = [sql_query 'SUM_PRICE_CHANGE >=' price_change_in_percentage ' '];
 end
 sql_query = [sql_query 'ORDER BY SUM_PRICE_CHANGE DESC'];
 symbol_list = fetch(handles.DatabaseConn, sql_query);
 if ~(isempty(symbol_list))
     symbol_list = table2cell(symbol_list);
-    col_names = {'Symbol','Sum Price Change','Average Volume','Max Close'};
+    col_names = {'Symbol','Sum Price Change (%)','Average Volume','Max Close','Max Vol Change (%)'};
     handles.FilterStockTable.ColumnName = col_names;
     handles.FilterStockTable.Data = symbol_list; 
 end  
