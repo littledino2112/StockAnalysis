@@ -108,10 +108,11 @@ function [ status, msg ] = update_stock_db( db_conn )
            
            % Remove downloaded files
            rmdir(path_to_unzip,'s');
-       catch
-           if (debug)
-              disp('Error occurs'); 
-           end
+       catch ME
+           rethrow(ME);
+%            if (debug)
+%               disp('Error occurs'); 
+%            end
        end
     end
     if (date_added > 0)
