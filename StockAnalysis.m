@@ -459,7 +459,7 @@ date_start = get_last_date(handles.DatabaseConn, handles.Database.TableNames.HOS
 stock_diff_table = handles.Database.TableNames.HOSE_STOCK_DIFF;
 stock_table = handles.Database.TableNames.STOCK;
 condition_added = 0;
-sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, AVG(VOLUME) AS AVG_VOLUME, MAX(CLOSE) AS MAX_CLOSE, '...
+sql_query = ['SELECT ' stock_diff_table '.SYMBOL, SUM(CLOSE_DIFF_PERCENTAGE) AS SUM_PRICE_CHANGE, MAX(VOLUME) AS MAX_VOLUME, MAX(CLOSE) AS MAX_CLOSE, '...
              'MAX(VOLUME_DIFF_PERCENTAGE) AS MAX_VOLUME_DIFF '...
              'FROM ' stock_diff_table ' INNER JOIN ' stock_table ' '...
              'ON ' stock_table '.SYMBOL_DATE = ' stock_diff_table '.SYMBOL_DATE '...
@@ -492,7 +492,7 @@ sql_query = [sql_query 'ORDER BY SUM_PRICE_CHANGE DESC'];
 symbol_list = fetch(handles.DatabaseConn, sql_query);
 if ~(isempty(symbol_list))
     symbol_list = table2cell(symbol_list);
-    col_names = {'Symbol','Sum Price Change (%)','Average Volume','Max Close','Max Vol Change (%)'};
+    col_names = {'Symbol','Sum Price Change (%)','Max Volume','Max Close','Max Vol Change (%)'};
     handles.FilterStockTable.ColumnName = col_names;
     handles.FilterStockTable.Data = symbol_list; 
 end  
