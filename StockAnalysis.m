@@ -203,19 +203,27 @@ function OBVChartButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if ~isempty(handles.SelectedStock.TimeSeriesObj)
     figure('Name',['On Balance Volume - ' handles.SelectedStock.Name]);
-    subplot(3,1,1);
-    candle(handles.SelectedStock.TimeSeriesObj);
-    subplot(3,1,2);   
+    ax = subplot(3,1,1);
+    plot_candle_chart(ax,handles.SelectedStock.TimeSeriesObj);
+    ax = subplot(3,1,2);   
     obv = onbalvol(handles.SelectedStock.TimeSeriesObj);
     % Compute SMA5 and SMA20 for OBV
-    sma5 = tsmovavg(obv,'s',5);
-    sma10 = tsmovavg(obv,'s',10);
-    plot(obv);
     hold on;
-    plot(sma5);
-    plot(sma10);
-    legend('Raw data','SMA5','SMA10');
+    plot(obv) 
+    legend_desc = {'Raw data'};
+    if (length(obv) >= 5)
+        sma5 = tsmovavg(obv,'s',5);
+        plot(sma5);
+        legend_desc = [legend_desc,{'SMA5'}];
+    end
+    if (length(obv) >= 20)
+        sma20 = tsmovavg(obv,'s',20);
+        plot(sma20);
+        legend_desc = [legend_desc,{'SMA20'}];
+    end
+    legend(legend_desc,'Location','northwest');
     hold off;
+    title(ax,'On balance volume');
     
     % Plot volume in bar graph
     ax = subplot(3,1,3);
@@ -223,6 +231,7 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     bar(data_extract(:,1),data_extract(:,2));
     ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
     datetick(ax,'x','dd-mmm-yy','keepticks');
+    title(ax,'Volume');
 end
 
 
@@ -578,9 +587,8 @@ ts_data = fints(data.DATE, [data.DIFF data.FOREIGN_DIFF], {'SDNational','SDForei
 ts_data_national = cumsum(ts_data.SDNational);
 ts_data_foreign = cumsum(ts_data.SDForeign);
 figure('Name',['Supply Demand - ' handles.SelectedStock.Name]);
-subplot(3,1,1);
-candle(handles.SelectedStock.TimeSeriesObj);
-title('Candle chart');
+ax = subplot(3,1,1);
+plot_candle_chart(ax,handles.SelectedStock.TimeSeriesObj);
 subplot(3,1,2);
 title('Cumulative (Demand - Supply)');
 yyaxis left;
@@ -588,7 +596,7 @@ plot(ts_data_national);
 ylabel('Cumulative stocks');
 yyaxis right;
 plot(ts_data_foreign);
-legend('National investors','Foreign investors');
+legend('National investors','Foreign investors','Location','northwest');
 % Plot volume in bar graph
 ax = subplot(3,1,3);
 data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
