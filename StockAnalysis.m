@@ -586,3 +586,30 @@ data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
 bar(data_extract(:,1),data_extract(:,2));
 ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
 datetick(ax,'x','dd-mmm-yy','keepticks');
+
+
+% --- Executes on button press in PopulateTableButton.
+function PopulateTableButton_Callback(hObject, eventdata, handles)
+% hObject    handle to PopulateTableButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+stocklist = handles.StockSelectionMenu.String;
+idx = handles.StockSelectionMenu.Value;
+stock_name = stocklist{idx};
+duration = handles.DurationEdit.String;
+duration = str2double(duration);
+start_date = num2str(floor(now) - duration);
+stock_tb = handles.Database.TableNames.STOCK;
+stock_diff_tb = handles.Database.TableNames.HOSE_STOCK_DIFF;
+sql_query = ['SELECT ' stock_tb '.SYMBOL, ' stock_tb '.DATE, ' stock_tb '.OPEN, ' stock_tb '.CLOSE, ' stock_diff_tb '.CLOSE_DIFF_PERCENTAGE, '...
+             stock_tb '.VOLUME FROM ' stock_tb ' INNER JOIN ' stock_diff_tb ' ON ' stock_tb '.SYMBOL_DATE = ' stock_diff_tb '.SYMBOL_DATE '...
+             'WHERE ' stock_tb '.DATE > ' start_date ' AND ' stock_tb '.SYMBOL = ''' stock_name ''' '...
+             'ORDER BY ' stock_tb '.DATE DESC'];
+selected_stock = fetch(handles.DatabaseConn, sql_query);
+if (~isempty(selected_stock))
+    selected_stock.DATE = datestr(selected_stock.DATE);
+    selected_stock = table2cell(selected_stock);
+    col_names = {'Symbol','Date','Open','Close','Change (%)','Volume'};
+    handles.StockDetailTable.ColumnName = col_names;
+    handles.StockDetailTable.Data = selected_stock; 
+end
