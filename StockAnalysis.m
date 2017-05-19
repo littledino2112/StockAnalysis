@@ -22,7 +22,7 @@ function varargout = StockAnalysis(varargin)
 
 % Edit the above text to modify the response to help StockAnalysis
 
-% Last Modified by GUIDE v2.5 16-May-2017 10:45:17
+% Last Modified by GUIDE v2.5 18-May-2017 22:03:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -137,7 +137,6 @@ idx = handles.StockSelectionMenu.Value;
 stock_name = stocklist{idx};
 duration = handles.DurationEdit.String;
 duration = str2double(duration);
-db_conn = handles.DatabaseConn;
 start_date = num2str(floor(now) - duration);
 
 [msg, selected_stock] = query_stock(handles.DatabaseConn,handles.Database.TableNames.STOCK,stock_name,start_date);
@@ -173,7 +172,6 @@ idx = handles.StockSelectionMenu.Value;
 stock_name = stocklist{idx};
 duration = handles.DurationEdit.String;
 duration = str2double(duration);
-db_conn = handles.DatabaseConn;
 start_date = num2str(floor(now) - duration);
 
 [msg, selected_stock] = query_stock(handles.DatabaseConn,handles.Database.TableNames.STOCK,stock_name,start_date);
@@ -241,8 +239,9 @@ function CandleChartButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 if ~isempty(handles.SelectedStock.TimeSeriesObj)
-    figure('Name',['Candle Chart - ' handles.SelectedStock.Name]);
-    candle(handles.SelectedStock.TimeSeriesObj);
+%     figure('Name',['Candle Chart - ' handles.SelectedStock.Name]);
+%     candle(handles.SelectedStock.TimeSeriesObj);
+    chartfts(handles.SelectedStock.TimeSeriesObj);
 end
 
 
@@ -296,18 +295,18 @@ end
 
 
 
-function edit4_Callback(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
+function FilterVolumeChangeEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterVolumeChangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit4 as text
-%        str2double(get(hObject,'String')) returns contents of edit4 as a double
+% Hints: get(hObject,'String') returns contents of FilterVolumeChangeEdit as text
+%        str2double(get(hObject,'String')) returns contents of FilterVolumeChangeEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit4 (see GCBO)
+function FilterVolumeChangeEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FilterVolumeChangeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
