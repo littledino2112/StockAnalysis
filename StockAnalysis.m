@@ -211,12 +211,12 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     hold on;
     plot(obv) 
     legend_desc = {'Raw data'};
-    if (length(obv) >= 5)
+    if (length(obv) > 5)
         sma5 = tsmovavg(obv,'s',5);
         plot(sma5);
         legend_desc = [legend_desc,{'SMA5'}];
     end
-    if (length(obv) >= 20)
+    if (length(obv) > 20)
         sma20 = tsmovavg(obv,'s',20);
         plot(sma20);
         legend_desc = [legend_desc,{'SMA20'}];
@@ -529,20 +529,31 @@ duration = handles.DurationEdit.String;
 duration = str2double(duration);
 [dates, results] = compute_market_trend(handles.DatabaseConn,duration);
 % Compute simple moving average on 5-day basis
-sma5 = tsmovavg(results,'s',5,1); % 1 indicates the input vector is column-oriented matrix where each row is an observation
-sma20 = tsmovavg(results,'s',20,1);
 figure('Name',['Market trend - ' handles.SelectedStock.Name]);
 subplot(2,1,1);
 if ~isempty(handles.SelectedStock.TimeSeriesObj)
     candle(handles.SelectedStock.TimeSeriesObj);
 end
 ax = subplot(2,1,2);
-plot(ax,dates,results,dates,sma5,dates,sma20);
+hold on;
+plot(dates,results);
+legend_desc = {'Raw data'};
+if (length(results) > 5)
+    sma5 = tsmovavg(results,'s',5,1);
+    plot(dates,sma5);
+    legend_desc = [legend_desc,{'SMA5'}];
+end
+if (length(results) > 20)
+    sma20 = tsmovavg(results,'s',20,1);
+    plot(dates,sma20);
+    legend_desc = [legend_desc,{'SMA20'}];
+end
+legend(legend_desc,'Location','northwest');
 title('Cumulative Advance-Decline line');
 ax.XTick = linspace(dates(1),dates(end)+1,4);
 datetick(ax,'x','dd-mmm-yy','keepticks');
-legend('Raw data','SMA5','SMA20');
 xtickangle(ax,90);
+hold off;
 
 
 % --- Executes on button press in pushbutton9.
