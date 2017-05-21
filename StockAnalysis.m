@@ -227,11 +227,27 @@ if ~isempty(handles.SelectedStock.TimeSeriesObj)
     
     % Plot volume in bar graph
     ax = subplot(3,1,3);
-    data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
-    bar(data_extract(:,1),data_extract(:,2));
-    ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
+    title('Volume');
+    hold on;
+    volume = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME);
+    dates = handles.SelectedStock.TimeSeriesObj.dates;
+    bar(dates,volume);
+    ax.XTick = linspace(dates(1), dates(end) + 1,8);
     datetick(ax,'x','dd-mmm-yy','keepticks');
-    title(ax,'Volume');
+    legend_desc = {'Boxes'};
+    if (length(volume) > 5)
+        sma5 = tsmovavg(volume,'s',5,1);
+        plot(dates,sma5);
+        legend_desc = [legend_desc,{'SMA5'}];
+    end
+    if (length(volume) > 20)
+        sma20 = tsmovavg(volume,'s',20,1);
+        plot(dates,sma20);
+        legend_desc = [legend_desc,{'SMA20'}];
+    end
+    legend(legend_desc,'Location','northwest');
+
+    hold off;
 end
 
 
@@ -610,10 +626,27 @@ plot(ts_data_foreign);
 legend('National investors','Foreign investors','Location','northwest');
 % Plot volume in bar graph
 ax = subplot(3,1,3);
-data_extract = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME,1);
-bar(data_extract(:,1),data_extract(:,2));
-ax.XTick = linspace(data_extract(1,1), data_extract(end,1) + 1,8);
+title('Volume');
+hold on;
+volume = fts2mat(handles.SelectedStock.TimeSeriesObj.VOLUME);
+dates = handles.SelectedStock.TimeSeriesObj.dates;
+bar(dates,volume);
+ax.XTick = linspace(dates(1), dates(end) + 1,8);
 datetick(ax,'x','dd-mmm-yy','keepticks');
+legend_desc = {'Boxes'};
+if (length(volume) > 5)
+    sma5 = tsmovavg(volume,'s',5,1);
+    plot(dates,sma5);
+    legend_desc = [legend_desc,{'SMA5'}];
+end
+if (length(volume) > 20)
+    sma20 = tsmovavg(volume,'s',20,1);
+    plot(dates,sma20);
+    legend_desc = [legend_desc,{'SMA20'}];
+end
+legend(legend_desc,'Location','northwest');
+
+hold off;
 
 
 % --- Executes on button press in PopulateTableButton.
